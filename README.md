@@ -1,4 +1,4 @@
-COMP249 Web Technology 2019: Web Development Assignment
+ITEC649 Web Technology 2019: Web Development Assignment
 ===
 
 
