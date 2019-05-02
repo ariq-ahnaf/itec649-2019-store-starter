@@ -1,5 +1,4 @@
 import unittest
-import sqlite3
 import os
 from bottle.ext import sqlite
 import bottle
@@ -9,6 +8,7 @@ import dbschema
 import main
 import session
 import urllib
+import uuid
 
 DATABASE_NAME = "test.db"
 # initialise the sqlite plugin for bottle
@@ -30,6 +30,12 @@ class FunctionalTests(unittest.TestCase):
     def tearDown(self):
         self.db.close()
         os.unlink(DATABASE_NAME)
+
+    def test_about_page(self):
+        """The /about page contains the required text"""
+
+        response = self.app.get('/about')
+        self.assertIn("Welcome to WT! The innovative online store", response)
 
     def test_home_page_links(self):
         """Home page contains links to Home and View Cart"""
@@ -83,6 +89,37 @@ class FunctionalTests(unittest.TestCase):
         self.assertIn(session.COOKIE_NAME, self.app.cookies)
         cookie = list(self.app.cookiejar)[0]
         self.assertEqual('/', cookie.path, "cookie path should be set to /")
+
+    def test_category_page_product_names(self):
+        """Category page should contain the names of all products in
+        the category
+        """
+
+        for category in ['male', 'female']:
+            response = self.app.get('/category/' + category)
+
+            for key in self.products:
+                product = self.products[key]
+                title = html.escape(product['name'])
+                if product['category'] == category:
+                    self.assertIn(title, response)
+                else:
+                    self.assertNotIn(title, response)
+
+    def test_category_page_bad_category(self):
+        """Category page for non-existant category
+        has no products and has a special message"""
+
+        # category name is a random string
+        badcat = str(uuid.uuid4())
+        response = self.app.get('/category/' + badcat)
+
+        for key in self.products:
+            product = self.products[key]
+            title = html.escape(product['name'])
+            self.assertNotIn(title, response)
+
+        self.assertIn("No products in this category", response)
 
     def test_product_page(self):
         """Each product has a page at /products/<id> with

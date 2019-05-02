@@ -96,6 +96,33 @@ class SessionTests(unittest.TestCase):
             self.assertIn('quantity', entry)
             self.assertIn('cost', entry)
 
+    def test_cart_update(self):
+        """We can update the quantity of an item in the cart"""
+
+        # first need to force the creation of a session and
+        # add the cookie to the request
+        sessionid = session.get_or_create_session(self.db)
+        self.assertIsNotNone(sessionid)
+        request.cookies[session.COOKIE_NAME] = sessionid
+
+        # add something to the cart
+        product =  self.products['Yellow Wool Jumper']
+        quantity = 3
+        session.add_to_cart(self.db, product['id'], quantity )
+        cart = session.get_cart_contents(self.db)
+
+        self.assertEqual(1, len(cart))
+        self.assertEqual(product['id'], cart[0]['id'])
+        self.assertEqual(quantity, cart[0]['quantity'])
+
+        # now update the cart, check that we still have one item and the
+        # quantity is doubled
+        session.add_to_cart(self.db, product['id'], quantity, update=True)
+
+        self.assertEqual(1, len(cart))
+        self.assertEqual(product['id'], cart[0]['id'])
+        self.assertEqual(quantity*2, cart[0]['quantity'])
+
 
 
 if __name__=='__main__':
