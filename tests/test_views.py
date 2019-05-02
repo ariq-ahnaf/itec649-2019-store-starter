@@ -95,7 +95,7 @@ class FunctionalTests(unittest.TestCase):
         the category
         """
 
-        for category in ['male', 'female']:
+        for category in ['men', 'women']:
             response = self.app.get('/category/' + category)
 
             for key in self.products:
